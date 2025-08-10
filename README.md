@@ -1,5 +1,9 @@
 MCP Atomic Tool Architecture Design Document
+
+
 Executive Summary
+
+
 Transform the current MCP Weather Server from composite tools to atomic, reusable components that provide AI agents with granular control and true agency over weather data workflows.
 ________________________________________
 Current Architecture Analysis
@@ -370,68 +374,7 @@ async def ai_completion(prompt: str, ...) -> str:
     filtered_prompt = content_filter.sanitize(prompt)
     # ... proceed with filtered prompt
 ________________________________________
-Testing Strategy
-Unit Testing
-# Test each atomic tool independently
-async def test_get_secret():
-    result = await get_secret("openweather-api-key")
-    assert result is not None
-    assert len(result) > 0
 
-async def test_http_request():
-    result = await http_request("https://httpbin.org/get")
-    assert result["status"] == 200
-    assert "data" in result
-Integration Testing
-# Test tool combinations
-async def test_weather_workflow():
-    # Step 1: Get API key
-    api_key = await get_secret("openweather-api-key")
-
-    # Step 2: Build URL
-    url = await build_api_url(
-        "https://api.openweathermap.org/data/2.5",
-        "weather",
-        {"q": "Seattle", "appid": api_key}
-    )
-
-    # Step 3: Make request
-    response = await http_request(url)
-
-    # Step 4: Validate response
-    validation = await validate_api_response(
-        response["data"],
-        ["main", "weather", "name"]
-    )
-
-    assert validation["valid"] is True
-Agent Workflow Testing
-# Test realistic agent scenarios
-async def test_agent_weather_insights():
-    """Test how an agent might use atomic tools."""
-
-    # Agent decides to get current weather first
-    current = await get_current_weather_atomic("London")
-
-    # Agent chooses to get forecast for comparison
-    forecast = await get_forecast_atomic("London")
-
-    # Agent generates custom prompt
-    prompt = await generate_weather_prompt(
-        current, forecast, "travel"
-    )
-
-    # Agent gets AI insights
-    insights = await ai_completion(prompt)
-
-    # Agent formats final response
-    result = await format_data(
-        {"current": current, "forecast": forecast, "insights": insights},
-        "detailed"
-    )
-
-    assert "travel" in result.lower()
-________________________________________
 Performance Considerations
 Caching Strategy
 # Cache frequently requested data
@@ -448,26 +391,7 @@ async def batch_weather_request(locations: list) -> dict:
 # Parallel processing
 async def parallel_ai_analysis(prompts: list) -> list:
     """Process multiple AI requests concurrently."""
-________________________________________
-Migration Strategy
-Backward Compatibility
-# Keep existing tools as convenience wrappers
-@mcp.tool()
-async def get_current_weather(location: str) -> str:
-    """Legacy composite tool - uses atomic tools internally."""
 
-    # Use atomic tools for implementation
-    api_key = await get_secret("openweather-api-key")
-    url = await build_api_url(base_url, "weather", params)
-    response = await http_request(url)
-    formatted = await format_data(response["data"], "weather_current")
-
-    return formatted
-Progressive Adoption
-1.	Phase 1: Atomic tools alongside existing
-2.	Phase 2: Document atomic workflows
-3.	Phase 3: Migrate internal implementation
-4.	Phase 4: Deprecate composite tools (optional)
 ________________________________________
 Expected Benefits
 🤖 For AI Agents
